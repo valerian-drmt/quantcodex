@@ -1,0 +1,15 @@
+{
+  "name": "quantcodex",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "content": "python3 scripts/build_content.py",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.4.13"
+  }
+}

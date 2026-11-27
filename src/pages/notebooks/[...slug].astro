@@ -1,0 +1,78 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE, url } from '../../lib/site';
+import { notebooks } from '../../lib/content';
+
+export function getStaticPaths() {
+  return notebooks.map((notebook) => ({ params: { slug: notebook.slug }, props: { notebook } }));
+}
+
+const { notebook } = Astro.props;
+const githubUrl = `${SITE.repo}/blob/main/${notebook.path}`;
+const rawUrl = `${SITE.repo.replace('github.com', 'raw.githubusercontent.com')}/main/${notebook.path}`;
+---
+<Base title={notebook.title} active="notebooks" bodyClass="app">
+  <div class="container nb-title">
+    <a href={url('notebooks/')}>← All notebooks</a>
+    <h1>{notebook.title}</h1>
+  </div>
+
+  <div class="container nb-layout">
+    <div class="nb-side">
+      <nav class="glass nb-toc" aria-label="Contents">
+        <span>Contents</span>
+        {notebook.sections.map((s, i) => (
+          <a href={`#${s.id}`} aria-current={i === 0 ? 'location' : undefined} data-toc={s.id}>{s.title}</a>
+        ))}
+      </nav>
+      <div class="nb-tools">
+        <button type="button" class="btn glassy" data-code-toggle>Hide code</button>
+        <a class="btn glassy" href={githubUrl}>GitHub ↗</a>
+        <a class="btn glassy" href={rawUrl} download>Download .ipynb</a>
+      </div>
+    </div>
+
+    <article class="glass nb-panel">
+      <div class="nb-scroll prose" data-scroll>
+        {notebook.sections.map((s) => (
+          <section class="nb-section" id={s.id} data-section>
+            {s.id === 'introduction' && <h2>Introduction</h2>}
+            <Fragment set:html={s.html} />
+          </section>
+        ))}
+      </div>
+    </article>
+  </div>
+</Base>
+
+<script>
+  const panel = document.querySelector<HTMLElement>('[data-scroll]')!;
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc]'));
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-section]'));
+
+  // Highlight the section being read.
+  const update = () => {
+    const top = panel.getBoundingClientRect().top;
+    let current = 0;
+    sections.forEach((s, i) => { if (s.getBoundingClientRect().top - top < 140) current = i; });
+    if (panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 4) current = sections.length - 1;
+    links.forEach((a, i) => (i === current ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+  };
+  panel.addEventListener('scroll', update, { passive: true });
+
+  // Contents links scroll the panel, not the page.
+  links.forEach((a) => a.addEventListener('click', (e) => {
+    const target = document.getElementById(a.dataset.toc!);
+    if (!target) return;
+    e.preventDefault();
+    panel.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+    history.replaceState(null, '', `#${target.id}`);
+  }));
+
+  // Show / hide all code cells.
+  const toggle = document.querySelector<HTMLButtonElement>('[data-code-toggle]')!;
+  toggle.addEventListener('click', () => {
+    const hidden = panel.classList.toggle('hide-code');
+    toggle.textContent = hidden ? 'Show code' : 'Hide code';
+  });
+</script>

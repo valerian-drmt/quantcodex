@@ -1,0 +1,95 @@
+---
+import Base from '../../layouts/Base.astro';
+import { url } from '../../lib/site';
+import { problems, type Problem } from '../../lib/content';
+
+export function getStaticPaths() {
+  return problems.map((problem, i) => ({
+    params: { slug: problem.slug },
+    props: { problem, prev: problems[i - 1] ?? null, next: problems[i + 1] ?? null },
+  }));
+}
+
+interface Props {
+  problem: Problem;
+  prev: Problem | null;
+  next: Problem | null;
+}
+const { problem, prev, next } = Astro.props;
+---
+<Base title={`${problem.id} - ${problem.title}`} active="problems">
+  <div class="container page" style="gap: 18px">
+    <div class="problem-top">
+      <a class="btn glassy" href={url('problems/')}>← All problems</a>
+      <div class="right">
+        <div class="timer" role="timer" aria-label="Time on this problem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--medium)"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2"></path><path d="M9 2h6"></path></svg>
+          <output data-timer>00:00:00</output>
+          <button type="button" data-timer-toggle aria-label="Pause timer">
+            <svg data-icon-pause width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"></rect><rect x="14" y="4" width="5" height="16" rx="1"></rect></svg>
+            <svg data-icon-play hidden width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"></path></svg>
+          </button>
+        </div>
+        {prev
+          ? <a class="btn glassy" href={url(`problems/${prev.slug}/`)}><span class="dim">‹ Previous</span><span>{prev.id} - {prev.title}</span></a>
+          : <span class="btn glassy" aria-disabled="true">‹ Previous</span>}
+        {next
+          ? <a class="btn glassy" href={url(`problems/${next.slug}/`)}><span>{next.id} - {next.title}</span><span class="dim">Next ›</span></a>
+          : <span class="btn glassy" aria-disabled="true">Next ›</span>}
+      </div>
+    </div>
+
+    <article class="glass problem-card">
+      <div class="problem-head">
+        <h1>{problem.id} - {problem.title}</h1>
+        <div class="tags">
+          <span class={`level ${problem.difficulty}`}>{problem.difficulty}</span>
+          <span class="pill">{problem.category}</span>
+        </div>
+      </div>
+      <div class="prose statement" set:html={problem.statement} />
+
+      <div class="reveals">
+        {problem.hint && (
+        <details class="reveal hint">
+          <summary><span class="label"><span class="dot"></span><strong>Hint</strong><small>A nudge in the right direction</small></span></summary>
+          <div class="body prose" set:html={problem.hint} />
+        </details>
+        )}
+        {problem.answer && (
+        <details class="reveal answer">
+          <summary><span class="label"><span class="dot"></span><strong>Answer</strong><small>The final result only</small></span></summary>
+          <div class="body prose" set:html={problem.answer} />
+        </details>
+        )}
+        {problem.explanation && (
+        <details class="reveal explanation">
+          <summary><span class="label"><span class="dot"></span><strong>Explanation</strong><small>The full reasoning, step by step</small></span></summary>
+          <div class="body prose" set:html={problem.explanation} />
+        </details>
+        )}
+      </div>
+    </article>
+  </div>
+</Base>
+
+<script>
+  // Timer: starts when the page opens, can be paused.
+  const out = document.querySelector<HTMLOutputElement>('[data-timer]')!;
+  const toggle = document.querySelector<HTMLButtonElement>('[data-timer-toggle]')!;
+  const pauseIcon = toggle.querySelector<SVGElement>('[data-icon-pause]')!;
+  const playIcon = toggle.querySelector<SVGElement>('[data-icon-play]')!;
+  let elapsed = 0;
+  let running = true;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const show = () => {
+    out.textContent = `${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor(elapsed / 60) % 60)}:${pad(elapsed % 60)}`;
+  };
+  setInterval(() => { if (running) { elapsed += 1; show(); } }, 1000);
+  toggle.addEventListener('click', () => {
+    running = !running;
+    pauseIcon.toggleAttribute('hidden', !running);
+    playIcon.toggleAttribute('hidden', running);
+    toggle.setAttribute('aria-label', running ? 'Pause timer' : 'Resume timer');
+  });
+</script>

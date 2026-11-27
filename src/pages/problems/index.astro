@@ -1,0 +1,93 @@
+---
+import Base from '../../layouts/Base.astro';
+import { url } from '../../lib/site';
+import { problems } from '../../lib/content';
+
+const categories = [...new Set(problems.map((p) => p.category))].sort();
+const levels = ['Easy', 'Medium', 'Hard'];
+---
+<Base title="Problems" active="problems">
+  <div class="container page">
+    <h1 class="page-title">Problems</h1>
+
+    <div class="list-layout" data-table data-sort="num" data-dir="1">
+      <aside class="glass filters" aria-label="Filters">
+        <div>
+          <h2>Category</h2>
+          <div class="facet">
+            {categories.map((c) => (
+              <button type="button" data-facet="category" data-value={c} aria-pressed="false">
+                <span>{c}</span><span class="count">{problems.filter((p) => p.category === c).length}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h2>Difficulty</h2>
+          <div class="chips">
+            {levels.map((l) => <button type="button" data-facet="difficulty" data-value={l} aria-pressed="false">{l}</button>)}
+          </div>
+        </div>
+        <button type="button" class="link-btn" data-reset>Clear filters</button>
+      </aside>
+
+      <section class="glass table-card">
+        <div class="search">
+          <label>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <span class="sr-only">Search problems</span>
+            <input type="search" placeholder="Search a term" data-search />
+          </label>
+        </div>
+        <div class="table-scroll">
+          <div class="table">
+            <div class="trow head problems-grid">
+              <button type="button" data-sort="num" data-label="No.">No.</button>
+              <button type="button" data-sort="title" data-label="Title">Title</button>
+              <span>Category</span>
+              <button type="button" data-sort="level" data-label="Difficulty">Difficulty</button>
+            </div>
+            <div data-rows>
+              {problems.map((p) => (
+                <a
+                  class="trow problems-grid"
+                  data-row
+                  href={url(`problems/${p.slug}/`)}
+                  data-num={p.id}
+                  data-title={p.title}
+                  data-category={p.category}
+                  data-difficulty={p.difficulty}
+                  data-search={`${p.id} ${p.title} ${p.category} ${p.difficulty} ${p.excerpt}`.toLowerCase()}
+                >
+                  <span class="num">{p.id}</span>
+                  <span class="title"><strong>{p.title}</strong><small>{p.excerpt}</small></span>
+                  <span class="cell">{p.category}</span>
+                  <span><span class={`level ${p.difficulty}`}>{p.difficulty}</span></span>
+                </a>
+              ))}
+            </div>
+            <p class="empty" data-empty hidden>No problem matches this search.</p>
+          </div>
+        </div>
+        <nav class="pager" aria-label="Pagination">
+          <div class="left">
+            <label>Rows per page
+              <select data-per>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+            <span class="info" data-info></span>
+          </div>
+          <div class="pages" data-pages></div>
+        </nav>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { initTable } from '../../scripts/table';
+  document.querySelectorAll<HTMLElement>('[data-table]').forEach(initTable);
+</script>

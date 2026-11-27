@@ -1,0 +1,70 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, url } from '../lib/site';
+import { problems, notebooks } from '../lib/content';
+
+const latestProblems = [...problems].sort((a, b) => b.id - a.id).slice(0, 3);
+const latestNotebooks = notebooks.slice(0, 3);
+---
+<Base>
+  <div class="container page" style="gap: 36px">
+    <section class="hero">
+      <h1>QuantCodex</h1>
+      <p>{SITE.description}</p>
+      <div class="social">
+        <span class="by">Built by <strong>{SITE.author}</strong></span>
+        <a class="btn glassy" href={SITE.github}>GitHub ↗</a>
+        <a class="btn glassy" href={SITE.linkedin}>LinkedIn ↗</a>
+      </div>
+    </section>
+
+    <div class="sections">
+      <section class="glass section-card">
+        <div>
+          <span class="num">01</span>
+          <h2><a href={url('problems/')}>Problems</a></h2>
+        </div>
+        <p>Brainteasers and problems in probability, statistics and finance. Each one comes with a hint, the answer and a worked explanation.</p>
+        <div class="latest">
+          <h3>Latest</h3>
+          <ul>
+            {latestProblems.map((p) => (
+              <li><a href={url(`problems/${p.slug}/`)}><span>{p.title}</span><span>{p.category.toLowerCase()}</span></a></li>
+            ))}
+          </ul>
+          <a class="btn" href={url('problems/')} style="align-self: flex-start; margin-top: 6px">All problems</a>
+        </div>
+      </section>
+
+      <section class="glass section-card">
+        <div>
+          <span class="num">02</span>
+          <h2><a href={url('notebooks/')}>Research notebooks</a></h2>
+        </div>
+        <p>Jupyter notebooks on pricing, machine learning, microstructure and trading, rendered with their formulas, code and outputs.</p>
+        <div class="latest">
+          <h3>Latest</h3>
+          <ul>
+            {latestNotebooks.map((n) => (
+              <li><a href={url(`notebooks/${n.slug}/`)}><span>{n.title}</span><span>{n.domain}</span></a></li>
+            ))}
+          </ul>
+          <a class="btn" href={url('notebooks/')} style="align-self: flex-start; margin-top: 6px">All notebooks</a>
+        </div>
+      </section>
+
+      <section class="glass section-card">
+        <div>
+          <span class="num">03</span>
+          <h2><a href={url('games/')}>Game modelling</a></h2>
+        </div>
+        <p>Probability games and game theory, modelled end to end: rules, exact EV or equilibrium, and the proof behind the optimal strategy.</p>
+        <div class="latest">
+          <h3>Latest</h3>
+          <p style="font-size: 14px">The first games are on their way.</p>
+          <a class="btn" href={url('games/')} style="align-self: flex-start; margin-top: 6px">All games</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>

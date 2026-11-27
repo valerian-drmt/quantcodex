@@ -1,0 +1,56 @@
+---
+import '../styles/global.css';
+import { SITE, url } from '../lib/site';
+
+interface Props {
+  title?: string;
+  active?: 'problems' | 'notebooks' | 'games';
+  bodyClass?: string;
+}
+const { title, active, bodyClass } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+const nav = [
+  { key: 'problems', label: 'Problems', href: url('problems/') },
+  { key: 'notebooks', label: 'Notebooks', href: url('notebooks/') },
+  { key: 'games', label: 'Games', href: url('games/') },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={SITE.description} />
+    <title>{pageTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class={bodyClass}>
+    <header class="site-header">
+      <div class="bar">
+        <a class="logo" href={url('')}>quant<span>codex</span></a>
+        <nav class="nav" aria-label="Main">
+          {nav.map((item) => (
+            <a href={item.href} aria-current={active === item.key ? 'page' : undefined}>{item.label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="row">
+        <span>Built by {SITE.author}</span>
+        <div>
+          <a href={SITE.github}>GitHub ↗</a>
+          <a href={SITE.linkedin}>LinkedIn ↗</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
